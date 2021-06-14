@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<title>Design_history</title>
+<meta charset="UTF-8">
+<meta name="viewport" content=" initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-grey.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script
+    src="https://code.jquery.com/jquery-3.5.1.js"
+    integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+    crossorigin="anonymous"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.css">
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.js"></script>
+<script type="text/javascript" src="chartjs-plugin-colorschemes.js"></script>
+<style>
+html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
+</style>
+<body class="w3-theme-dark">
+
+<h3>Design History</h3>
+
+<div class="w3-panel w3-padding w3-border-top w3-border-orange">
+<tt><p>
+Design: {{design}}<br>
+Metric: {{metric}}<br>
+Flow: {{flow}}<br>
+Baseline: {{baseline}}<br>
+Suite_dir: {{suite_dir}}<br>
+</p></tt>
+</div>
+<!--div class="w3-panel w3-padding w3-border-top w3-border-orange w3-text-light-grey">
+    <canvas id="pie-chart"></canvas>
+</div-->
+
+<div class="w3-panel w3-padding w3-border-top w3-border-orange">    
+    <tt>
+    <table class="w3-table w3-small w3-stripped w3-bordered" style="width:100%">
+        <thead>
+        <tr>
+            {%for h in headers%}
+            <th>{{h}}</th>
+            <th> </th>
+            {%endfor%}
+        </tr>
+        </thead>
+
+        <tbody>
+        {%for rw in data%}
+        <tr>
+            {%for cell in rw%}
+                {%if not loop.last %}
+                    <td>{{cell}}<td>
+                {%else%}
+                    <td>{{cell|safe}}</td>
+                {%endif%}
+            {%endfor%}
+        </tr>
+        {%endfor%}
+        </tbody>
+    </table>
+    </tt>
+</div>
+
+<!-- Footer -->
+<footer class="w3-container w3-padding-16">
+    <p class="w3-small w3-right">by <a href="mailto:vasquez@synopsys.com" target="_blank">Antonio Vasquez</a></p>
+</footer-->
+
+<script>
+var coll = document.getElementsByClassName("collapsible");
+var i;
+
+for (i = 0; i < coll.length; i++) {
+  coll[i].addEventListener("click", function() {
+    this.classList.toggle("active");
+    var content = this.nextElementSibling;
+    if (content.style.maxHeight){
+      content.style.maxHeight = null;
+    } else {
+      content.style.maxHeight = content.scrollHeight + "px";
+    } 
+  });
+}
+</script>
+
+<script>
+function do_highlight() {
+  var url = window.location.href;
+  if (url.includes("#")){
+    // highlight the button
+    var tag = url.split('#')[1];
+    document.getElementById(tag).classList.add("w3-yellow")
+    
+    //display the CL
+    var cont = document.getElementById(tag).nextElementSibling;
+    cont.style.maxHeight = cont.scrollHeight + 'px'
+  }
+}
+</script>
+
+</body>
+<style>
+.collapsible {
+  // background-color: #777;
+  // color: white;
+  cursor: pointer;
+  padding: 18px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+}
+
+.active, .collapsible:hover {
+  background-color: #555;
+}
+
+.collapsible:after {
+  content: '\002B';
+  //color: white;
+  //font-weight: bold;
+  float: right;
+  margin-left: 5px;
+}
+
+.active:after {
+  content: "\2212";
+}
+
+.content {
+  padding: 0 18px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.2s ease-out;
+  background-color: #f1f1f1;
+}
+</style>
+
+
+</body>
+<style>
+.blok {
+width : 220px;
+height : 180px;
+display: inline-block;
+margin-bottom: 5px;
+}
+
+body {
+    font-family: 'Roboto';
+    padding-right: 160px;
+    padding-left: 160px;
+}
+
+</style>
+</html>

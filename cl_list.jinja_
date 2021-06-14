@@ -1,0 +1,129 @@
+<?php
+if(isset($_POST['comment'])) {
+    $data = $_POST['comment'];
+    $filename = $_POST['path']; 
+    $ret = file_put_contents($filename, $data, LOCK_EX);
+    if($ret === false) {
+        die('There was an error writing this file');
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html>
+<title>{{html_title}}</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.css">
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.js"></script>
+<style>
+html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
+</style>
+<body class="w3-light-grey">
+
+
+<h4><b>{{branch|upper}}</b> checkins from <b>{{st_nightly}}</b> to <b>{{end_nightly}}</b></h4>
+<p>Displaying {{cl_dict|length}} changes.</p>
+{% for cl in cl_dict %}
+
+
+<div class="w3-panel w3-white w3-padding w3-round-xlarge">
+  <h5>{{cl}}<h5>
+  <tt class="shrinkable" id="{{cl}}">
+  {{cl_dict[cl]}}
+  </tt>
+</div> 
+
+{%endfor%}
+
+<script>
+/*function showMore(id){
+    document.getElementById(id+'Overflow').className='';
+    document.getElementById(id+'MoreLink').className='hidden';
+    document.getElementById(id+'LessLink').className='';
+}
+
+function showLess(id){
+    document.getElementById(id+'Overflow').className='hidden';
+    document.getElementById(id+'MoreLink').className='';
+    document.getElementById(id+'LessLink').className='hidden';
+}
+
+var len = 100;
+var shrinkables = document.getElementsByClassName('shrinkable');
+if (shrinkables.length > 0) {
+    for (var i = 0; i < shrinkables.length; i++){
+        var fullText = shrinkables[i].innerHTML;
+        if(fullText.length > len){
+            var trunc = fullText.substring(0, len).replace(/\w+$/, '');
+            var remainder = "";
+            var id = shrinkables[i].id;
+            remainder = fullText.substring(len, fullText.length);
+            shrinkables[i].innerHTML = '<span>' + trunc + '<span class="hidden" id="' + id + 'Overflow">'+ remainder +'</span></span>&nbsp;<a id="' + id + 'MoreLink" href="#!" onclick="showMore(\''+ id + '\');">More</a><a class="hidden" href="#!" id="' + id + 'LessLink" onclick="showLess(\''+ id + '\');">Less</a>';
+        }
+    }
+}*/
+</script>
+
+
+</body>
+<style>
+.collapsible {
+  background-color: #777;
+  color: white;
+  cursor: pointer;
+  padding: 18px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+}
+
+.active, .collapsible:hover {
+  background-color: #555;
+}
+
+.collapsible:after {
+  content: '\002B';
+  color: white;
+  font-weight: bold;
+  float: right;
+  margin-left: 5px;
+}
+
+.active:after {
+  content: "\2212";
+}
+
+/*p {
+  padding: 0 0 20px;
+}*/
+
+.content {
+  padding: 0 18px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.2s ease-out;
+  background-color: #f1f1f1;
+}
+
+  body {
+      font-family: 'Roboto';
+      padding-right: 160px;
+      padding-left: 160px;
+  }
+
+  html {
+  scroll-behavior: smooth;
+  }
+</style>
+
+
+
+</html>

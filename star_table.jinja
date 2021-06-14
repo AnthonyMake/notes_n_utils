@@ -1,0 +1,68 @@
+<table class="w3-table w3-small display">
+    <thead>
+    <tr class="{{head_color_tag}}">
+        <th class="w3-border-left w3-border-right">STAR ID</th>
+        <!--th class="w3-border-left w3-border-right">Jira Key</th-->
+        <th class="w3-border-left w3-border-right branch">Branch Impact</th>
+        <!--th class="w3-border-left w3-border-right">Impacts</th-->
+        <th class="w3-border-left w3-border-right summary">Summary</th>
+        <th class="w3-border-left w3-border-right">Reporter</th>
+        <th class="w3-border-left w3-border-right">Assignee</th>
+        <th class="w3-border-left w3-border-right">Priority</th>
+        <th class="w3-border-left w3-border-right">Status</th>
+        <th class="w3-border-left w3-border-right">Created</th>
+        <th class="w3-border-left w3-border-right">Updated</th>
+        <th class="w3-border-left w3-border-right">Prod. L1</th>
+        <th class="w3-border-left w3-border-right comment">Comment</th>
+        <th class="w3-border-left w3-border-right"></th>
+    </tr>
+    </thead>
+    <tbody>
+{%for star in table_data %}
+    <tr>
+        <th class="w3-border-left w3-border-right"><a href="{{star['link']}}">{{star['Key']}}</a><br>{{star['STAR ID']}}</th>
+        <!--td class="w3-border-left w3-border-right"><a href="{{star['link']}}">{{star['Key']}}</a></td-->
+        <td class="w3-border-left w3-border-right branch">
+        <span><b>{{star['Branch']}}</b></span><br>
+        {%for b in star['Affects Version']%}
+            <span>{{b}}</span><br>
+        {%endfor%}
+        </td>
+        <td class="w3-border-left w3-border-right summary">{{star['Summary']}}</td>
+        <td class="w3-border-left w3-border-right">{{star['Reporter']}}</td>
+        <td class="w3-border-left w3-border-right">{{star['Assignee']}}</td>
+        <td class="w3-border-left w3-border-right">{{star['Priority']}}</td>
+        <td class="w3-border-left w3-border-right">{{star['Status']}}</td>
+        <td class="w3-border-left w3-border-right">{{star['Created']}}</td>
+        <td class="w3-border-left w3-border-right">{{star['Updated']}}</td>
+        <td class="w3-border-left w3-border-right">{{star['Product L1 Name']}}</td>
+        <td class = "w3-border-left w3-border-right comment">
+        <?php
+            $comment_data = file_get_contents("{{stars_text_dir}}/{{star['STAR ID']}}.comment");
+            echo $comment_data;
+        ?>
+        </td>
+        <td class="w3-border-left w3-border-right"> 
+            <button class="w3-tag w3-small w3-deep-purple w3-round" 
+            onclick="document.getElementById('{{star['STAR ID']}}').style.display='block'">Edit</button>
+            <div id="{{star['STAR ID']}}" class="w3-modal">
+            <div class="w3-modal-content">
+                <div class="w3-container">
+                <span onclick="document.getElementById('{{star['STAR ID']}}').style.display='none'" class="w3-button w3-display-topright">&times;</span>
+                <p><b>Editing comment for STAR {{star['STAR ID']}}</b></p>
+                <form class="w3-container" action="#" method="POST">
+                <p>
+                <label><b>Comment</b></label>
+                <input type="hidden" name="path" value="{{stars_text_dir}}/{{star['STAR ID']}}.comment"></input>
+                <textarea name="comment" class="w3-input" type="text"><?php $comment_data = file_get_contents("{{stars_text_dir}}/{{star['STAR ID']}}.comment");echo $comment_data;?></textarea>
+                </p>
+                <button name="submit"type="submit" class="w3-btn w3-small w3-teal" style="width:120px">Submit</button>
+                </form>
+                </div>
+            </div>
+        </div>
+        </td>
+    </tr>
+{% endfor %}
+</tbody>
+</table>

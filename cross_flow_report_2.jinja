@@ -1,0 +1,355 @@
+<?php
+  if(isset($_POST['comment'])) {
+      $data = $_POST['comment'];
+      $filename = $_POST['path']; 
+      $ret = file_put_contents($filename, $data, LOCK_EX);
+      if($ret === false) {
+          die('There was an error writing this file');
+      }
+}?>
+<!DOCTYPE html>
+<html>
+<title>{{ html_title }}</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script
+    src="https://code.jquery.com/jquery-3.5.1.js"
+    integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+    crossorigin="anonymous"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.css">
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.js"></script>
+<style>
+html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
+
+.flow{width: 20%;}
+.suite{width: 10%}
+.status{width: 10%;}
+.comment{width: 60%;}
+.button{width: 10%;}
+
+</style>
+<body class="w3-light-grey">
+
+{% set title = '<b>' + branch + '</b> Cross Flow Report' %}
+{% include '/slowfs/dcopt105/vasquez/utils/suite_collectors_dev/v_repo/suite_collectors/links_frame.jinja' %}
+
+
+{# 
+{%for suite in cross_flow_dict%}
+{%if suite != 'cross_flow'%}
+ <div class = "w3-panel w3-container w3-white w3-padding w3-round-xlarge w3-small">   
+    <h5><b>{{branch}} {{suite}}</b>
+    <!-- START TEXT BRIEF MODAL-->
+    <button onclick="document.getElementById('{{branch}}_{{suite}}').style.display='block'" class="w3-button w3-teal w3-tiny">Text Brief</button>
+    </h5>
+    <div id="{{branch}}_{{suite}}" class="w3-modal">
+        <div class="w3-modal-content">
+        <div class="w3-container">
+            <span onclick="document.getElementById('{{branch}}_{{suite}}').style.display='none'" class="w3-button w3-display-topright">&times;</span>
+            <p><tt>
+            {%set show = True %}
+            {%for nightly in cross_flow_dict[suite]%}
+            <b>{{nightly}}</b><br>
+            {%for flow in cross_flow_dict[suite][nightly]%}
+            {%if cross_flow_dict[suite][nightly][flow]%}
+            <b>{{flow}}</b><br>
+            <?php
+                $comment_data = file_get_contents("{{cross_flow_dict[suite][nightly][flow]['comment_path']}}");
+                if($comment_data) {
+                    echo $comment_data;
+                } else {
+                    echo "NTR";
+                }
+            ?>
+            {%endif%}
+            <br>
+            {%endfor%}
+            <br><br>
+            {%endfor%}
+            </tt></p>
+        </div>
+        </div>
+    </div>
+    <!-- end brief modal -->
+
+
+    {%for nightly in cross_flow_dict[suite]%}
+    
+    <h6>{{nightly}}</h6>
+    {%if cross_flow_dict[suite][nightly]%}
+    <table class="w3-table-all w3-small">
+    <tr>
+        <th class="flow">Flow</th>
+        <th class="status">PRS Status</th>
+        <th class="comment">Comment</th>
+        <th class="button"></th>
+    </tr>
+        {%for flow in cross_flow_dict[suite][nightly]%}
+        {%if cross_flow_dict[suite][nightly][flow]%}
+        <tr>
+            <td class="flow">
+            <a href="{{all_links_dict[tool][branch][suite][flow] + '#' + nightly}}">{{flow}}</a>
+            </td>
+            <td class="status">
+                {%if cross_flow_dict[suite][nightly][flow]['done'] >= 0 %} <span class="w3-tag w3-green w3-small" style="width:70%;">done: {{cross_flow_dict[suite][nightly][flow]['done']}}</span><br>{%endif%}
+                {%if cross_flow_dict[suite][nightly][flow]['pending'] > 0 %} <span class="w3-tag w3-amber w3-small" style="width:70%;">pending: {{cross_flow_dict[suite][nightly][flow]['pending']}}</span><br>{%endif%}
+                {%if cross_flow_dict[suite][nightly][flow]['failed'] > 0 %} <span class="w3-tag w3-red w3-small" style="width:70%;">failed: {{cross_flow_dict[suite][nightly][flow]['failed']}} </span><br>{%endif%}
+                {%if cross_flow_dict[suite][nightly][flow]['running'] > 0 %} <span class="w3-tag w3-amber w3-small" style="width:70%;">running: {{cross_flow_dict[suite][nightly][flow]['running']}} </span><br>{%endif%}
+                {%if cross_flow_dict[suite][nightly][flow]['n_designs'] >= 0 %} <span class="w3-tag w3-blue w3-small" style="width:70%;">designs: {{cross_flow_dict[suite][nightly][flow]['n_designs']}} </span><br>{%endif%}
+            </td>
+            <td class="comment">
+            <?php
+                $comment_data = file_get_contents("{{cross_flow_dict[suite][nightly][flow]['comment_path']}}");
+                echo $comment_data;
+            ?>
+            </td>
+            <td class="button">
+                <button class="w3-tag w3-small w3-deep-purple w3-round" 
+                onclick="document.getElementById('{{branch}}-{{nightly}}-{{flow}}').style.display='block'">Edit</button>
+                    <div id="{{branch}}-{{nightly}}-{{flow}}" class="w3-modal">
+                    <div class="w3-modal-content">
+                      <div class="w3-container">
+                        <span onclick="document.getElementById('{{branch}}-{{nightly}}-{{flow}}').style.display='none'" class="w3-button w3-display-topright">&times;</span>
+                        <p><b>Editing comment for {{branch}}-{{nightly}}-{{flow}}</b></p>
+                        
+                        <form class="w3-container" action="#" method="POST">
+                        <p>
+                        <label>Comment</label>
+                        <input type="hidden" name="path" value="{{cross_flow_dict[suite][nightly][flow]['comment_path']}}"></input>
+                        <textarea name="comment" class="w3-input" type="text">
+                        <?php
+                            $comment_data = file_get_contents("{{cross_flow_dict[suite][nightly][flow]['comment_path']}}");
+                            echo $comment_data;
+                        ?>
+                        </textarea>
+                        </p>
+                        <button name="submit"type="submit" class="w3-btn w3-small w3-teal" style="width:120px">Submit</button>
+                        </form>
+                      </div>
+                    </div>
+                    </div>
+            </td>
+        </tr>
+        {%endif%}
+        {%endfor%}
+    </table>
+    {%endif%}
+    {%endfor%}
+    </div>
+{%endif%}
+{%endfor%}
+#}
+
+<!--Cross Flow Table-->
+<div class = "w3-panel w3-container w3-white w3-padding w3-round-xlarge w3-small">
+{% if cross_flow_tab %}
+    <h5><b>{{branch}} {{suite}}</b>
+
+    
+    <button onclick="document.getElementById('{{branch}}').style.display='block'" class="w3-button w3-teal w3-tiny">text summary</button>
+    </h5>
+
+    <!-- START TEXT BRIEF MODAL-->
+    <div id="{{branch}}" class="w3-modal">
+        <div class="w3-modal-content">
+        <div class="w3-container">
+            <span onclick="document.getElementById('{{branch}}').style.display='none'" class="w3-button w3-display-topright w3-red">&times;</span>
+            <h5><b>{{branch}}</b> text summary</h5>
+            <p><tt>
+            <ul>
+            {% for ng in cross_flow_ng %}
+            <li><b>{{ng}}</b></li>
+                <ul>
+                {%for f in cross_flow_ng[ng] %}
+                    <li><b>{{ f['suite']}}: {{f['flow']}}</b> [<a href="{{f['diff_report']}}">diff</a>] <br>
+                    <?php
+                        $comment_data = file_get_contents("{{cross_flow_dict[f['suite']][ng][f['flow']]['comment_path']}}");
+                        if($comment_data) {
+                            echo $comment_data;
+                        } else {
+                            echo "NTR";
+                        }
+                    ?></li>
+                {%endfor%}
+                </ul><br>
+            {% endfor %}
+            </ul>
+            {#
+            <b>{{nightly}}</b><br>
+            {%for flow in cross_flow_dict[suite][nightly]%}
+            {%if cross_flow_dict[suite][nightly][flow]%}
+            <b>{{flow}}</b><br>
+            <?php
+                $comment_data = file_get_contents("{{cross_flow_dict[suite][nightly][flow]['comment_path']}}");
+                if($comment_data) {
+                    echo $comment_data;
+                } else {
+                    echo "NTR";
+                }
+            ?>
+            {%endif%}
+            <br>
+            {%endfor%}
+            <br><br>
+            {%endfor%}
+            #}
+            </tt><br><br></p>
+        </div>
+        </div>
+    </div>
+    <!-- end brief modal -->
+    
+
+
+    <table class="w3-table display">
+        <thead>
+        <tr class="w3-deep-purple">
+            <th>Suite</th>
+            <th>Nightly</th>
+            <th>Flow</th>
+            <th>Status</th>
+            <th>Comment</th>
+            <th></th>
+        </tr>
+        </thead>
+
+        <tbody>
+        {%for item in cross_flow_tab%}
+            <tr>
+            <td class= "suite">{{item['suite']}}</td>
+            <td class= "suite">{{item['nightly']}}</td>
+            <td class= "flow"><a href="{{all_links_dict[tool][branch][item['suite']][item['flow']] + '#' + item['nightly']}}">{{item['flow']}}.</a></td>
+            <td class="status">
+                {%if item['status']['done'] >= 0 %} <span class="w3-tag w3-green w3-small" style="width:70%;">done: {{item['status']['done']}}</span><br>{%endif%}
+                {%if item['status']['pending'] > 0 %} <span class="w3-tag w3-amber w3-small" style="width:70%;">pending: {{item['status']['pending']}}</span><br>{%endif%}
+                {%if item['status']['failed'] > 0 %} <span class="w3-tag w3-red w3-small" style="width:70%;">failed: {{item['status']['failed']}} </span><br>{%endif%}
+                {%if item['status']['running'] > 0 %} <span class="w3-tag w3-amber w3-small" style="width:70%;">running: {{item['status']['running']}} </span><br>{%endif%}
+                {%if item['status']['n_designs'] >= 0 %} <span class="w3-tag w3-blue w3-small" style="width:70%;">designs: {{item['status']['n_designs']}} </span><br>{%endif%}
+            </td>
+            <td class="comment">
+            <?php
+                $comment_data = file_get_contents("{{cross_flow_dict[item['suite']][item['nightly']][item['flow']]['comment_path']}}");
+                echo $comment_data;
+            ?>
+            </td>
+            <td class="button">
+                <button class="w3-tag w3-small w3-deep-purple w3-round" 
+                onclick="document.getElementById('tab-{{item['suite']}}-{{item['nightly']}}-{{item['flow']}}').style.display='block'">Edit</button>
+                    <div id="tab-{{item['suite']}}-{{item['nightly']}}-{{item['flow']}}" class="w3-modal">
+                    <div class="w3-modal-content">
+                      <div class="w3-container">
+                        <span onclick="document.getElementById('tab-{{item['suite']}}-{{item['nightly']}}-{{item['flow']}}').style.display='none'" class="w3-button w3-red w3-display-topright">&times;</span>
+                        <p><b>Editing comment for {{item['suite']}}-{{item['nightly']}}-{{item['flow']}}</b></p>
+                        
+                        <form class="w3-container" action="#" method="POST">
+                        <p>
+                        <label>Comment</label>
+                        <input type="hidden" name="path" value="{{cross_flow_dict[item['suite']][item['nightly']][item['flow']]['comment_path']}}"></input>
+                        <textarea name="comment" class="w3-input" type="text"><?php $comment_data = file_get_contents("{{cross_flow_dict[item['suite']][item['nightly']][item['flow']]['comment_path']}}"); echo $comment_data;?></textarea>
+                        </p>
+                        <button name="submit"type="submit" class="w3-btn w3-small w3-teal" style="width:120px">Submit</button>
+                        </form>
+                      </div>
+                    </div>
+                    </div>
+            </td>
+            </tr>
+        {%endfor%}
+        </tbody>
+    </table>
+{%endif%}
+</div>
+
+
+<!-- Footer -->
+<footer class="w3-container w3-padding-16 w3-deep-purple">
+    <p class="w3-small w3-right">Crafted by <a href="mailto:vasquez@synopsys.com" target="_blank">Antonio Vasquez</a></p>
+</footer>
+
+<!-- End page content -->
+</div>
+
+
+<script>
+// Get the Sidebar
+var mySidebar = document.getElementById("mySidebar");
+
+// Get the DIV with overlay effect
+var overlayBg = document.getElementById("myOverlay");
+
+// Toggle between showing and hiding the sidebar, and add overlay effect
+function w3_open() {
+if (mySidebar.style.display === 'block') {
+    mySidebar.style.display = 'none';
+    overlayBg.style.display = "none";
+} else {
+    mySidebar.style.display = 'block';
+    overlayBg.style.display = "block";
+}
+}
+
+// Close the sidebar with the close button
+function w3_close() {
+mySidebar.style.display = "none";
+overlayBg.style.display = "none";
+}
+
+// copy to clipbioard Yup!
+function copyToClipboard (str) {
+// Create new element
+var el = document.createElement('textarea');
+// Set value (string to be copied)
+el.value = str;
+// Set non-editable to avoid focus and move outside of view
+el.setAttribute('readonly', '');
+el.style = {position: 'absolute', left: '-9999px'};
+document.body.appendChild(el);
+// Select text inside element
+el.select();
+// Copy text to clipboard
+document.execCommand('copy');
+// Remove temporary element
+document.body.removeChild(el);
+}
+</script>
+
+<script>
+$(document).ready( function () {
+    $('table.display').DataTable({
+        "pageLength": 100,
+        "order": [[ 1, "desc" ]],
+        "columns": [
+        { "type": "html" },
+        { "type": "html" },
+        { "type": "html" },
+        { "type": "html", "orderable": false},
+        { "type": "html", "orderable": false},
+        { "type": "html" , "orderable": false}
+        ]
+    });
+} );
+
+</script>
+
+
+
+</body>
+<style>
+.blok {
+width : 220px;
+height : 180px;
+display: inline-block;
+margin-bottom: 5px;
+}
+
+body {
+    font-family: 'Roboto';
+    padding-right: 160px;
+    padding-left: 160px;
+}
+
+</style>
+</html>

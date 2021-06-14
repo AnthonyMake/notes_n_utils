@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<title>{{html_title}}</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script
+    src="https://code.jquery.com/jquery-3.5.1.js"
+    integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+    crossorigin="anonymous"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.css">
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.js"></script>
+<style>
+html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
+
+.des{width: 15%;}
+.ng{width: 6%;}
+</style>
+</style>
+<body class="w3-light-grey">
+
+<div class="w3-container w3-tiny">
+  
+  <h2>{{metric}}</h2>
+
+  <div class="w3-container">
+		<br>
+		<b>Branch : </b>{{branch}}</br>
+		<b>Suite : </b>{{suite}}</br>
+		<b>Flow : </b>{{flow}}</br>
+    <b>Baseline : </b>{{baseline}}</br>
+	<div>
+  <br>
+
+  {#
+  <div class="w3-responsive">
+  <h4>Mean Values</h4>
+  <table class="w3-table-all w3-small">
+    <thead>
+      <tr class="w3-deep-purple">
+      {%for hd in head_row %}
+        {%if hd == 'design'%}
+        <th class="w3-border-left w3-border-right des"> </td>
+        {%else%}
+        <th class="w3-border-left w3-border-right ng">{{hd}}</td>
+        {%endif%}
+
+      {%endfor%}
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+          {%for hd in head_row %}
+          <td class="w3-border-left w3-border-right">
+            {{des_rows['Mean'][hd]}}
+          </td> 
+          {%endfor%}
+      </tr>
+    </tbody>
+  </table>
+  #}
+
+  <table class="w3-table w3-small display">
+    <thead>
+      <tr class="w3-deep-purple">
+      {%for hd in head_row %}
+        {%if hd == 'design'%}
+          <th class="w3-border-left w3-border-right des">{{hd}}</td>
+        {%else%}
+          <th class="w3-border-left w3-border-right ng">{{hd}}</td>
+        {%endif%}
+      {%endfor%}
+      </tr>
+    </thead>
+    <thead>
+      <tr class="w3-sand">
+          {%for hd in head_row %}
+          <td class="w3-border-left w3-border-right">
+            {%if 'Mean' in des_rows%}
+            {{des_rows['Mean'][hd]}}
+            {%endif%}
+          </td> 
+          {%endfor%}
+      </tr>
+    </thead>
+    <tbody>
+    {%for row in head_col %}
+      {%if row != 'Mean'%}
+      <tr>
+          {%for hd in head_row %}
+          <td class="w3-border-left w3-border-right">
+            {{des_rows[row][hd]}}
+          </td> 
+          {%endfor%}
+      </tr>
+      {%endif%}
+    {%endfor%}
+    </tbody>
+  </table>
+  </div>
+</div>
+</body>
+<script>
+$(document).ready( function () {
+    $('table.display').DataTable({
+        "paging"    : false ,
+        "columnDefs": [{ "orderable": false, "targets": 0 }]
+    });
+
+    $('table.display2').DataTable({
+        "paging"    : false ,
+        searchPanes: {
+            controls: false
+        }
+    });
+} );
+</script>
+</html>

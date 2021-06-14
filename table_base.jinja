@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<title>{{tab_title}}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<script
+			  src="https://code.jquery.com/jquery-3.5.1.js"
+			  integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+			  crossorigin="anonymous"></script>
+		
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.css">
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.js"></script>
+<body>
+
+ <div class="w3-container w3-small">
+    <h2>{{title}}</h2>
+
+
+    <div class="w3-responsive">
+    <table class="w3-table-all display">
+    <thead>
+      <tr class = "w3-deep-purple">
+      {%for col in columns%}
+          <th>{{col}}</th>
+      {%endfor%}
+      </tr>
+    </thead>
+    <tbody>
+      {%for row in result_table%}
+        <tr>
+        {%for cel in row%}
+            <td class="w3-border-left w3-border-right">{{cel}}</td>
+        {%endfor%}
+        </tr>
+      {%endfor%}
+    </tbody>
+    </table>
+    </div>
+    
+</div>
+
+<script>
+$(document).ready( function () {
+    $('table.display').DataTable({
+        "pageLength": 50,
+    });
+} );
+</script>
+
+</script>

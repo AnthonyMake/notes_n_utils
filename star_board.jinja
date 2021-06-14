@@ -1,0 +1,414 @@
+<?php
+  if(isset($_POST['comment'])) {
+      $data = $_POST['comment'];
+      $filename = $_POST['path']; 
+      $ret = file_put_contents($filename, $data, LOCK_EX);
+      if($ret === false) {
+          die('There was an error writing this file');
+      }
+}?>
+<!DOCTYPE html>
+<html>
+<title>{{ html_title }}</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<script
+			  src="https://code.jquery.com/jquery-3.5.1.js"
+			  integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+			  crossorigin="anonymous"></script>
+		
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.css">
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.js"></script>
+
+<style>
+html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
+
+
+.flow{width: 20%;}
+.summary{width: 20%;}
+.comment{width: 30%;}
+.button{width: 10%;}
+.branch{width: 10%}
+
+</style>
+<body class="w3-light-grey">
+
+{% set title = html_title%}
+{% include "/slowfs/dcopt105/vasquez/utils/suite_collectors_dev/v_repo/suite_collectors/links_frame.jinja" ignore missing %}
+
+
+{# changed by extarnal include  
+<div class="w3-bar w3-white">
+    <a href="#" class="w3-bar-item w3-button"><b>PV</b> Tracking Hub</a>
+    <a href="#" class="w3-bar-item w3-button">{{html_title}}</a>
+</div>
+
+{%if all_links_dict%}
+{% for _branch in all_links_dict[tool]%}
+    {%if _branch != 'STAR_board'%}
+    <div class="w3-bar w3-deep-purple w3-small">
+    <a href="#" class="w3-bar-item w3-small w3-button"><b>{{_branch}}</b> Suites:</a>
+
+    {%for _suite in all_links_dict[tool][_branch]%}
+        {%if _suite != 'cross_flow'%}
+      <div class="w3-dropdown-hover">
+      <button class="w3-button w3-small">{{_suite}}</button>
+      <div class="w3-dropdown-content w3-bar-block w3-card-4">
+      
+      {%for _flow in all_links_dict[tool][_branch][_suite]%}
+        <a href="{{all_links_dict[tool][_branch][_suite][_flow]}}" class="w3-bar-item w3-button">{{_flow}}</a>
+      {%endfor%}
+      </div>
+      </div>
+        {%else%}
+        <a href="{{all_links_dict[tool][_branch][_suite]}}" class="w3-bar-item w3-button">Cross Flow Report</a>
+        {%endif%}
+    {%endfor%}
+    </div>
+    {%endif%}
+{%endfor%}
+{%endif%}
+#}
+<!--div class = "w3-padding" style="margin-left:15%"-->
+<div class = "w3-panel w3-container w3-white w3-padding w3-round-xlarge">
+    <h5>STAR Count<p class = "w3-tiny w3-right">Last update: {{update_time}}</p></h5>
+
+    <div class = "w3-row-padding w3-section">
+    <div class="w3-red w3-col s4"  style="width:10%;">
+    Showstoppers<br>
+    <span class="w3-xxlarge">{{ star_dict['showstopper']['board']| count  }}</span>
+    </div>
+
+    <div class="w3-amber w3-col s4" style="width:10%;">
+    Still Open<br>
+    <span class="w3-xxlarge">{{ star_dict['current']['board']| count  }}</span>
+    </div>
+
+    <div class="w3-yellow w3-col s4" style="width:10%;">
+    Created in {{star_dict['last_created']['days']}} days <br>
+    <span class="w3-xxlarge">{{ star_dict['last_created']['board']| count  }}</span>
+    </div>
+
+    <div class="w3-green w3-col s4" style="width:10%;">
+    Closed in {{star_dict['last_created']['days']}} days <br>
+    <span class="w3-xxlarge">{{ star_dict['last_resolved']['board']| count  }}</span>
+    </div>
+
+    </div>
+</div>
+
+<div class = "w3-panel w3-container w3-white w3-padding w3-round-xlarge w3-small"> 
+<span>
+<!--display queries -->
+<button onclick="document.getElementById('queries').style.display='block'" class="w3-button w3-teal w3-tiny w3-right">Jira Queries</button>
+    <div id="queries" class="w3-modal">
+        <div class="w3-modal-content">
+        <div class="w3-container">
+            <span onclick="document.getElementById('queries').style.display='none'" class="w3-button w3-display-topright w3-red">&times;</span>
+            <p><tt>            
+            <b>Showstoppers</b><br>
+            {{ star_dict['showstopper']['JQL'] }}<br><br>
+
+            <b>Currently Open</b><br>
+            {{ star_dict['current']['JQL'] }}<br><br>
+
+            <b>Created in last {{star_dict['last_created']['days']}} days</b><br>
+            {{ star_dict['last_created']['JQL'] }}<br><br>
+
+            <b>Closed in last {{star_dict['last_resolved']['days']}} days</b><br>
+            {{ star_dict['last_resolved']['JQL'] }}<br><br>
+
+            </tt></p>
+        </div>
+        </div>
+    </div>
+
+<!--TEXT REPORT-->
+<button onclick="document.getElementById('brief').style.display='block'" class="w3-button w3-deep-orange w3-tiny w3-right">SUMMARY REPORT</button>
+    <div id="brief" class="w3-modal">
+        <div class="w3-modal-content" style="width:80%">
+        <div class="w3-container">
+            <span onclick="document.getElementById('brief').style.display='none'" class="w3-button w3-display-topright w3-red">&times;</span>
+            <p><tt>
+            <br><br>
+            <b>STARS SUMMARY REPORT</b>
+                <ul>
+                <li>{{ star_dict['showstopper']['board']| count  }} showstoppers</li>
+                <li>{{ star_dict['current']['board']| count  }} still open</li>
+                <li>{{ star_dict['last_created']['board']| count  }} created in last {{star_dict['last_created']['days']}} days </li>
+                <li>{{ star_dict['last_resolved']['board']| count  }} closed in last {{star_dict['last_resolved']['days']}} days </li>
+                </ul>
+            <br><br>
+            <b>Showstoppers</b><br>
+                <ul>
+                {%for br in b_dict['showstopper']%}
+                <li><b>{{br}}</b></li>
+                <ul>
+                    {%for star in b_dict['showstopper'][br]%}
+                        <li>
+                        <b>({{star['Reporter']}}) <a href="{{star['link']}}">{{star['Key']}}</a></b>:{{star['Summary']}}<br>
+                        <i><?php $comment_data = file_get_contents("{{stars_text_dir}}/{{star['STAR ID']}}.comment"); echo $comment_data; ?></i>
+                        </li>
+                    {% endfor %}
+                </ul><br>
+                {%endfor%}
+                </ul>
+            <br><br>
+
+
+            <b>Still Open</b><br>
+                
+                <ul>
+                {%for br in b_dict['current']%}
+                <li><b>{{br}}</b></li>
+                <ul>
+                    {%for star in b_dict['current'][br]%}
+                        <li>
+                        <b>({{star['Reporter']}}) <a href="{{star['link']}}">{{star['Key']}}</a></b>:{{star['Summary']}};<br>
+                        <i><?php $comment_data = file_get_contents("{{stars_text_dir}}/{{star['STAR ID']}}.comment"); echo $comment_data; ?></i>
+                        </li>
+                    {% endfor %}
+                </ul><br>
+                {%endfor%}
+                </ul>
+            <br><br>
+                
+            
+            <b>Created in {%if star_dict['last_created']['days']%} last {{star_dict['last_created']['days']}} days</b>{%endif%}<br>
+                
+                <ul>
+                {%for br in b_dict['last_created']%}
+                <li><b>{{br}}</b></li>
+                <ul>
+                    {%for star in b_dict['last_created'][br]%}
+                        <li>
+                        <b>({{star['Reporter']}}) <a href="{{star['link']}}">{{star['Key']}}</a></b>:{{star['Summary']}};<br>
+                        <i><?php $comment_data = file_get_contents("{{stars_text_dir}}/{{star['STAR ID']}}.comment"); echo $comment_data; ?></i>
+                        </li>
+                    {% endfor %}
+                </ul><br>
+                {%endfor%}
+                </ul>
+            
+            <br><br>
+           
+
+            <b>Closed in {%if star_dict['last_resolved']['days']%} last {{star_dict['last_resolved']['days']}} days</b>{%endif%}<br>
+                <ul>
+                {%for br in b_dict['last_resolved']%}
+                <li><b>{{br}}</b></li>
+                <ul>
+                    {%for star in b_dict['last_resolved'][br]%}
+                        <li>
+                        <b>({{star['Reporter']}}) <a href="{{star['link']}}">{{star['Key']}}</a></b>:{{star['Summary']}}
+                        </li>
+                    {% endfor %}
+                </ul><br>
+                {%endfor%}
+                </ul>
+            
+
+            <br><br>
+            </tt></p>
+        </div>
+        </div>
+    </div>
+</span>
+
+{% if star_dict['showstopper']['board'] %}
+    
+    <h5>Showstoppers</h5>
+    {% set table_data = star_dict['showstopper']['board']%}
+    {% set head_color_tag = 'w3-red' %}
+    {% include "/slowfs/dcopt105/vasquez/utils/suite_collectors_dev/v_repo/suite_collectors/star_table.jinja" ignore missing %}
+
+{%endif%}
+
+{% if star_dict['current']['board'] %}
+    <h5>Still Open <i class="w3-small">include showstoppers and latest ones</i></h5>
+    
+    {% set table_data = star_dict['current']['board']%}
+    {% set head_color_tag = 'w3-amber' %}
+    {% include "/slowfs/dcopt105/vasquez/utils/suite_collectors_dev/v_repo/suite_collectors/star_table.jinja" ignore missing %}
+    
+{% endif %}
+
+
+{% if star_dict['last_created']['board'] %}
+    <h5>Created in last {%if star_dict['last_created']['days']%}{{star_dict['last_created']['days']}} days{%endif%}</h5>
+    
+    {% set table_data = star_dict['last_created']['board']%}
+    {% set head_color_tag = 'w3-yellow' %}
+    {% include "/slowfs/dcopt105/vasquez/utils/suite_collectors_dev/v_repo/suite_collectors/star_table.jinja" ignore missing %}
+
+{% endif %}
+
+{% if star_dict['last_resolved']['board'] %}
+    <h5>Closed in last {%if star_dict['last_resolved']['days']%}{{star_dict['last_resolved']['days']}} days{%endif%}</h5>
+    
+    {% set table_data = star_dict['last_resolved']['board']%}
+    {% set head_color_tag = 'w3-green' %}
+    {% include "/slowfs/dcopt105/vasquez/utils/suite_collectors_dev/v_repo/suite_collectors/star_table.jinja" ignore missing %}
+    
+{% endif %}
+
+
+</div>
+
+<!-- Footer -->
+<footer class="w3-container w3-padding-16 w3-deep-purple">
+    <p class="w3-small w3-right">Crafted by <a href="mailto:vasquez@synopsys.com" target="_blank">Antonio Vasquez</a></p>
+</footer>
+
+
+<!-- End page content -->
+</div>
+<!--/div-->
+<script>
+function sortTable(n) {
+    var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+    table = document.getElementById("myTable2");
+    switching = true;
+    // Set the sorting direction to ascending:
+    dir = "asc";
+    /* Make a loop that will continue until
+    no switching has been done: */
+    while (switching) {
+    // Start by saying: no switching is done:
+    switching = false;
+    rows = table.rows;
+    /* Loop through all table rows (except the
+    first, which contains table headers): */
+    for (i = 1; i < (rows.length - 1); i++) {
+        // Start by saying there should be no switching:
+        shouldSwitch = false;
+        /* Get the two elements you want to compare,
+        one from current row and one from the next: */
+        x = rows[i].getElementsByTagName("TD")[n];
+        y = rows[i + 1].getElementsByTagName("TD")[n];
+        /* Check if the two rows should switch place,
+        based on the direction, asc or desc: */
+        if (dir == "asc") {
+        if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+            // If so, mark as a switch and break the loop:
+            shouldSwitch = true;
+            break;
+        }
+        } else if (dir == "desc") {
+        if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+            // If so, mark as a switch and break the loop:
+            shouldSwitch = true;
+            break;
+        }
+        }
+    }
+    if (shouldSwitch) {
+        /* If a switch has been marked, make the switch
+        and mark that a switch has been done: */
+        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+        switching = true;
+        // Each time a switch is done, increase this count by 1:
+        switchcount ++;
+    } else {
+        /* If no switching has been done AND the direction is "asc",
+        set the direction to "desc" and run the while loop again. */
+        if (switchcount == 0 && dir == "asc") {
+        dir = "desc";
+        switching = true;
+        }
+    }
+    }
+}
+</script>
+
+
+
+<script>
+// Get the Sidebar
+var mySidebar = document.getElementById("mySidebar");
+
+// Get the DIV with overlay effect
+var overlayBg = document.getElementById("myOverlay");
+
+// Toggle between showing and hiding the sidebar, and add overlay effect
+function w3_open() {
+if (mySidebar.style.display === 'block') {
+    mySidebar.style.display = 'none';
+    overlayBg.style.display = "none";
+} else {
+    mySidebar.style.display = 'block';
+    overlayBg.style.display = "block";
+}
+}
+
+// Close the sidebar with the close button
+function w3_close() {
+mySidebar.style.display = "none";
+overlayBg.style.display = "none";
+}
+
+// copy to clipbioard Yup!
+function copyToClipboard (str) {
+// Create new element
+var el = document.createElement('textarea');
+// Set value (string to be copied)
+el.value = str;
+// Set non-editable to avoid focus and move outside of view
+el.setAttribute('readonly', '');
+el.style = {position: 'absolute', left: '-9999px'};
+document.body.appendChild(el);
+// Select text inside element
+el.select();
+// Copy text to clipboard
+document.execCommand('copy');
+// Remove temporary element
+document.body.removeChild(el);
+}
+</script>
+
+<script>
+$(document).ready( function () {
+    $('table.display').DataTable({
+        "pageLength": 50,
+        "order": [[ 7, "desc" ]],
+        "columns": [
+        { "type": "html" },
+        { "type": "html" },
+        { "type": "html" },
+        { "type": "html" },
+        { "type": "html" },
+        { "type": "html" },
+        { "type": "html" },
+        { "type": "date" },
+        { "type": "date" },
+        { "type": "html" },
+        { "type": "html" , "orderable": false},
+        { "type": "html" , "orderable": false}
+        ]
+    });
+} );
+</script>
+
+</body>
+<style>
+.blok {
+width : 220px;
+height : 180px;
+display: inline-block;
+margin-bottom: 5px;
+}
+
+body {
+    font-family: 'Roboto';
+    padding-right: 50px;
+    padding-left: 50px;
+}
+
+</style>
+</html>

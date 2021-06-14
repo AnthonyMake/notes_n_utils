@@ -1,0 +1,32 @@
+#!/slowfs/dcopt105/vasquez/cnda/Conda/bin/python
+import sys
+sys.path.append('/slowfs/dcopt105/vasquez/utils/suite_collectors_dev/v_repo/suite_collectors')
+from suite_pv_view import write_culprit_propts
+
+propts_comment = '''
+{{comment}}
+'''
+
+QTab_comment = '''
+{{QTab_comment}}
+'''
+
+cp_dict = {
+  'target_propts' : '{{tg_propts}}',
+  'target_dir'    : '{{tg_dir}}',
+  'suite_run_dir' : '{{suite_run_dir}}',
+  'ng_execs'      : '{{ng_execs}}',
+  'root_path'     : '{{root_path}}',
+  'start_nightly' : '{{start_nightly}}',
+  'end_nightly'   : '{{end_nightly}}',
+  'shell'         : '{{shell}}',
+  'flow'          : '{{flow}}',
+  'stages'        : 'DC ICC2',
+  'designs'       : '{{designs}}',
+  'comment'       : propts_comment,
+  'cls_execs_dir' : '{{cls_execs_dir}}',
+  'QTab_comment'  : QTab_comment,
+  'rt_accurate'   : {{rt_accurate}}
+}
+
+write_culprit_propts(cp_dict)

@@ -1,0 +1,574 @@
+<?php
+if(isset($_POST['comment'])) {
+    $data = $_POST['comment'];
+    $filename = $_POST['path']; 
+    $ret = file_put_contents($filename, $data, LOCK_EX);
+    if($ret === false) {
+        die('There was an error writing this file');
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html>
+<title>{{html_title}}</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.css">
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.js"></script>
+<style>
+html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
+</style>
+<body class="w3-light-grey">
+
+{% set title = branch_cname +'>'+suite_cname+'><b>'+flow +'</b>' %}
+{% include '/slowfs/dcopt105/vasquez/utils/suite_collectors_dev/v_repo/suite_collectors/links_frame.jinja' %}
+
+<!-- burocracy data -->
+<div class = "w3-panel w3-container w3-padding w3-small w3-round-xlarge">
+    <b>displaying: </b>
+    {{branch_cname}} > {{suite_cname}} > {{flow}} 
+    data for last {{nightly_max}} nightly-images
+    <b>selected metrics: </b>
+    {%for m in metrics_selection.keys()%}
+        {{m}},
+    {%endfor%}
+    <b>last update:</b> {{now}}
+</div>
+  
+<!-- historical reports -->
+<div class = "w3-panel w3-container w3-white w3-padding w3-round-xlarge w3-small">
+    <h5><b>Historical Reports</b></h5>
+    {%- if 'fm_history' in sum_links_dict -%}
+        <a class="w3-button w3-deep-orange" href={{sum_links_dict['fm_history']}}>
+        Formality</a>
+    {%- endif -%}
+    {%- if 'all_metrics_hist' in sum_links_dict -%}
+        <a class="w3-button w3-teal" href={{sum_links_dict['all_metrics_hist']}}>
+        Day2day Mean Base</a>
+    {%- endif -%}
+
+    {%- if 'all_metrics_hist_diff' in  sum_links_dict -%}
+        <a class="w3-button w3-teal" href={{sum_links_dict['all_metrics_hist_diff']}}>
+        Day2Day Mean diff</a>
+    {%- endif -%}
+
+    {%- for m in sum_links_dict['design_history'] -%}
+        <a class="w3-button w3-light-grey" href={{sum_links_dict['design_history'][m]}}>{{m}}</a>
+    {%- endfor -%}
+</div>
+
+<!-- QoR Table chart -->
+<h5><b><i class="fa fa-dashboard"></i> QoR Trend </b>
+{%if qor_table_link %}
+<a href="{{qor_table_link}}" class="w3-button w3-tiny w3-deep-purple w3-round-xlarge">
+<b> QoR Table </b></a>
+{%endif%}
+</h5>
+<!--div class="w3-panel w3-white w3-padding w3-round-xlarge w3-center">
+{% if qor_trend_image %}
+    <img src="{{qor_trend_image + '.png'}}" style="width:70%;" alt="QoR Trend" ><br>
+{% endif %}
+</div-->
+
+<!--New graph-->
+<div class="w3-panel w3-white w3-padding w3-round-xlarge w3-center">
+<canvas id="myChart"></canvas>
+<button class="w3-button w3-round w3-right w3-small w3-deep-purple"id="toggle">show/hide all</button>
+</div>
+
+
+<!-- QoR changes per-nightly Section -->
+<h5><b><i class="fa fa-dashboard"></i> Main QoR Changes </b></h5>
+
+    <!--button onclick="document.getElementById('{{branch}}').style.display='block'" class="w3-button w3-teal w3-tiny">text summary</button>
+    </h5-->
+
+    {# <!-- START TEXT BRIEF MODAL
+    <div id="{{branch}}" class="w3-modal">
+        <div class="w3-modal-content">
+        <div class="w3-container">
+            <span onclick="document.getElementById('{{branch}}').style.display='none'" class="w3-button w3-display-topright w3-red">&times;</span>
+            <h5><b>{{branch}}:</b>{{flow}} text summary</h5>
+            <p><tt>
+            <ul>
+            {% for nightly in result_qor %}
+            <li><b>{{ng}}</b></li>
+                <ul>
+                {%for f in cross_flow_ng[ng] %}
+                    <li><b>{{ f['suite']}}: {{f['flow']}}</b> [<a href="{{f['diff_report']}}">diff</a>] <br>
+                    <?php
+                        $comment_data = file_get_contents("{{cross_flow_dict[f['suite']][ng][f['flow']]['comment_path']}}");
+                        if($comment_data) {
+                            echo $comment_data;
+                        } else {
+                            echo "NTR";
+                        }
+                    ?></li>
+                {%endfor%}
+                </ul><br>
+            {% endfor %}
+            </ul>
+            {#
+            <b>{{nightly}}</b><br>
+            {%for flow in cross_flow_dict[suite][nightly]%}
+            {%if cross_flow_dict[suite][nightly][flow]%}
+            <b>{{flow}}</b><br>
+            <?php
+                $comment_data = file_get_contents("{{cross_flow_dict[suite][nightly][flow]['comment_path']}}");
+                if($comment_data) {
+                    echo $comment_data;
+                } else {
+                    echo "NTR";
+                }
+            ?>
+            {%endif%}
+            <br>
+            {%endfor%}
+            <br><br>
+            {%endfor%}
+        
+        
+            </tt><br><br></p>
+        </div>
+        </div>
+    </div>
+     end brief modal -->#}
+{% set table_ids = []%}
+
+{%for nightly in result_qor %}
+
+<div id="{{nightly}}" class="w3-light-grey">_<div>
+
+<!-- nightly panel -->
+<div class="w3-panel w3-white w3-padding w3-round-xlarge" >
+    
+    <!--Title plus link to reports and status bar-->
+    <div class="w3-cell-row">
+        <div class="w3-container w3-cell" style="width:75%">
+            <div>
+            <h5><b>{{nightly}}</b>
+            <!--link to reports-->
+            {% if rpt_status[nightly]['base']%}
+                <a 
+                href="{{'https://clearcase/' + '/'.join([root_path,branch,suite,nightly,'prs_report.'+ report_name +'.out']) }}"
+                class="w3-tag w3-small w3-green w3-round"> 
+                <i class='fa fa-check'></i> base report </a>
+            {% else %}
+                <a 
+                href="{{'https://clearcase/' + '/'.join([root_path,branch,suite,nightly,'prs_report.'+ report_name +'.out']) }}"
+                class="w3-tag w3-small w3-red w3-round"> 
+                <i class='fa fa-times'></i> base report </a>
+            {% endif %}
+
+            {% if rpt_status[nightly]['diff']%}
+                <a 
+                href="{{'https://clearcase/' + '/'.join([root_path,branch,suite,nightly,'prs_report.'+diff_report+'.out']) }}" 
+                class="w3-tag w3-small w3-green w3-round"> 
+                <i class='fa fa-check'></i> diff report </a>
+            {% else %}
+                <a 
+                href="{{'https://clearcase/' + '/'.join([root_path,branch,suite,nightly,'prs_report.'+diff_report+'.out']) }}" 
+                class="w3-tag w3-small w3-red w3-round"> 
+                <i class='fa fa-times'></i> diff report </a>
+            {% endif %}
+            </h5>
+            </div>
+        </div>
+        <!--Status bar-->
+        
+        <div class="w3-container w3-cell w3-right-align">
+        {%if flow in prs_status[branch][suite][nightly]%}
+            {%-  set done = prs_status[branch][suite][nightly][flow]['done'] -%}
+            {%-  set running = prs_status[branch][suite][nightly][flow]['running'] -%}
+            {%-  set pending = prs_status[branch][suite][nightly][flow]['pending'] -%}
+            {%-  set failed = prs_status[branch][suite][nightly][flow]['failed'] -%}
+            {%-  set unknown = prs_status[branch][suite][nightly][flow]['unknown'] -%}
+            {%-  set total = prs_status[branch][suite][nightly][flow]['n_designs'] -%}
+
+            {%- if failed  > 0 -%} <span class="w3-tag w3-red w3-small">fail: {{failed}} </span>{%-  endif -%}
+            {%- if unknown > 0 -%} <span class="w3-tag w3-yellow w3-small">unknown: {{unknown}} </span>{%-  endif -%}
+            {%- if running > 0 -%} <span class="w3-tag w3-orange w3-small">running: {{running}} </span>{%-  endif -%}
+            {%- if pending > 0 -%} <span class="w3-tag w3-orange w3-small">pending: {{pending}} </span>{%-  endif -%}
+            {%- if done   >= 0 -%} <span class="w3-tag w3-green w3-small">done: {{done}} </span>{%-  endif -%}
+            {%- if total -%}       <span class="w3-tag w3-blue w3-small">designs: {{total}} </span>{%-  endif -%}
+        {%endif%}
+        </div>
+    </div>
+    <!--end of status bar-->
+
+    {% set qor_table_dir = '/' + '/'.join([root_path,branch,suite,'QoR_tracking','image_data', nightly]) %}
+    
+    {% if qor_table_dir %}
+    <!-- QoR Table Comments -->
+    {% set comment_file = '/' + '/'.join([root_path,branch,suite,'QoR_tracking','image_data', nightly, 'comment.' + flow]) %}
+
+    <div class="w3-container w3-small">
+        <h6>QoR Table Comment</h6>
+        <div class="w3-container w3-border w3-small">
+            <p>
+            <!--extract text from comment file-->
+            <?php
+                $comment_data = file_get_contents("{{comment_file}}");
+                echo $comment_data;
+            ?>
+            </p>
+        </div>
+        
+        <button class="w3-tag w3-small w3-deep-purple w3-round" 
+        onclick="document.getElementById('{{nightly}}_comment').style.display='block'">
+        Edit
+        </button>
+        
+        <!-- comment edition handler -->
+        <div id="{{nightly}}_comment" class="w3-modal">
+          <div class="w3-modal-content">
+            <div class="w3-container">
+              <span onclick="document.getElementById('{{nightly}}_comment').style.display='none'" class="w3-button w3-display-topright">&times;</span>
+              <p><b>Edit comment for {{nightly}} {{flow}}</b></p>
+              <form class="w3-container" action="#" method="POST">
+              <p>
+              <label>Comment</label>
+              <input type="hidden" name="path" value="{{comment_file}}"></input>
+              <textarea name="comment" class="w3-input" type="text"> <?php $comment_data = file_get_contents("{{comment_file}}"); echo $comment_data; ?> </textarea>
+              </p>
+              <button name="submit" type="submit" class="w3-btn w3-small w3-teal" style="width:120px">Submit</button>
+              </form>
+            </div>
+          </div>
+        </div>
+    </div>
+    {% endif %}
+    <!-- end of QoR Table Comments -->
+
+    <!-- Fail Detection Table -->
+    {%if flow in prs_status[branch][suite][nightly]%}
+    {% if 'fail_list' in prs_status[branch][suite][nightly][flow] and prs_status[branch][suite][nightly][flow]['fail_list']%}
+    <div class="w3-container w3-small">
+        <h6>Fail Detection</h6>
+        <table class="w3-table-all">
+            <thead>
+            <tr class="w3-deep-purple">
+            {%for col in hdrs%}
+                <th>{{col}}</th> 
+            {%endfor%}
+            </tr>
+            </thead>
+            <tbody>
+            {% for fail in prs_status[branch][suite][nightly][flow]['fail_list'] %}
+                <tr class="w3-pale-red">
+                {% for k in hdrs %}
+                    {%if k == 'fatal_file'%}
+                        <td>{{fail[k]}}<button class="w3-tag w3-red w3-small" onclick="copyToClipboard('{{fail['logfile']}}')" >copy path</button> </td>
+                    {%elif k == 'stack_trace'%}
+                        <td><a href="{{fail['stack_trace']}}" class="w3-tag w3-red w3-small">stack trace</a></td>
+                    {%else%}
+                        <td>{{fail[k]}}</td>
+                    {%endif%}
+                {% endfor %}
+                </tr>
+            {%endfor%}
+            </tbody>
+        </table>
+    </div>
+    {%endif%}
+    {%endif%}
+
+    <!-- Mean values  table -->
+    {%if suite_means[nightly] and suite_means[nightly][flow]%}
+
+    <!--radar chart
+    <canvas id="{{nightly}}Chart" width="300" height="300"></canvas>
+    
+    <script>
+    var {{nightly}}Canvas = document.getElementById("{{nightly}}Chart");
+
+    var {{nightly}}Data = {
+    labels: [
+        {% for m in m_list %}
+            {% if "SPM" not in m %}
+            {{m}}{{ ", " if not loop.last }}
+            {% endif %}
+        {% endfor %}
+    ],
+    datasets: [{
+            label: "QoR",
+            backgroundColor: "rgba(200,0,0,0.2)",
+            data: [
+                {% for m in m_list %}
+                {% if (m in suite_means[nightly][flow]) and ("SPM" not in m) %}
+                    {% if suite_means[nightly][flow][m] != '--'%}
+                        {{suite_means[nightly][flow][m]}}{{ ", " if not loop.last }}
+                    {% else %}
+                        Null{{ ", " if not loop.last }}
+                    {% endif %}
+                {%endif%}
+                {% endfor %}
+            ]
+        }]
+    };
+
+    var radarChart = new Chart({{nightly}}Canvas, {
+    type: 'radar',
+    data: {{nightly}}Data
+    });
+    </script>
+    
+    radar chart end-->
+    
+    <div class="w3-container w3-small meanstab">
+        <h6>QoR trend <i class="w3-tiny">compared to {{prev_baseline}}</i></h6>
+        <div class="w3-tiny">
+        <table class="w3-table-all w3-responsive">
+            <thead>
+            <tr class="w3-deep-purple">
+            {%for mt in metrics_selection %}
+                <th class="w3-border-left w3-border-right">{{mt}}</th> 
+            {%endfor%}
+            </tr>
+            </thead>
+            <tbody>
+                <tr>
+                {%for mt in metrics_selection %}
+                    <td class="w3-border-left w3-border-right">
+                    {%if mt in suite_means[nightly][flow]%}{{suite_means[nightly][flow][mt]}}{%endif%}
+                    </td> 
+                {%endfor%}
+                </tr>
+            </tbody>
+        </table>
+        </div>
+    </div>
+    {%endif%}
+    <!-- end Mean values  table -->
+
+    <!-- QoR issues -->
+    {% if result_qor[nightly]%}
+    <div class="w3-container w3-small">
+    <h6>QoR issues <i class="w3-tiny">compared to {{prev_baseline}}</i></h6>
+        <table class="w3-table display" >
+            <thead>
+            <tr class="w3-deep-purple">
+            {% for col in result_qor[nightly][0].keys() %}
+                <th>{{col}}</th>
+            {%endfor%}
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for issue in result_qor[nightly] %}
+                {% set color = 'w3-tag w3-round w3-pale-green' if 'improv' in issue['Issue Type'] else 'w3-tag w3-round w3-pale-red' %}
+                <!--tr class="{{color}}"-->
+                <tr>
+                {% for k,v in issue.items() %}
+                    {% if k == 'Histogram Location' and v %}
+                        {% set v = mini_hist(v,issue['Design Value %'], 100, 15, 'rgb(67,58,183)') %}
+                        <td>{{v}}</td>
+                    {% elif k == 'Issue Type'%}
+                        <td><span class="{{color}}" >{{v}}</span></td>
+                    {%else%}
+                        <td>{{v}}</td>
+                    {%endif%}
+                    
+                {%endfor%}
+                </tr>
+            {%endfor%}
+            </tbody>
+        </table>
+    </div>
+    {%endif%}
+    
+    <!-- culprits -->
+    {%if culprits %}
+        {%if nightly in culprits%}
+            {% set cp_dir,status =  culprits[nightly] %}
+            {%if cp_dir%}
+                <div class="w3-container w3-small">
+                <h6>Culprit Run</h6>  
+                    {% if 'fail' in status %}
+                        <span class="w3-tag w3-red w3-small">{{status}}</span>
+                    {%else%}
+                        <span class="w3-tag w3-orange w3-small">{{status}}</span>
+                    {%endif%}
+
+                    <a href="https://clearcase/{{cp_dir}}" class="w3-tag w3-red w3-small">go to directory</a>
+                    <button class="w3-tag w3-green w3-small" onclick="copyToClipboard('{{cp_dir}}')">copy path</button>
+
+                    {% if not 'fail' in status %}
+                        -<a href="https://clearcase/{{cp_dir}}/cl_list.html" class="w3-tag w3-red w3-small">CL list</a>
+                    {%endif%}
+                </div>
+            {%endif%}
+        {%endif%}
+    {%endif%}
+</div>
+{%endfor%}
+  
+ <!-- Footer -->
+    <footer class="w3-container w3-padding-16 w3-deep-purple">
+      <p class="w3-small w3-right">Crafted by <a href="mailto:vasquez@synopsys.com" target="_blank">Antonio Vasquez</a></p>
+    </footer>
+
+    <!-- End page content -->
+  </div>
+
+  <script>
+  // Get the Sidebar
+  var mySidebar = document.getElementById("mySidebar");
+
+  // Get the DIV with overlay effect
+  var overlayBg = document.getElementById("myOverlay");
+
+  // Toggle between showing and hiding the sidebar, and add overlay effect
+  function w3_open() {
+    if (mySidebar.style.display === 'block') {
+      mySidebar.style.display = 'none';
+      overlayBg.style.display = "none";
+    } else {
+      mySidebar.style.display = 'block';
+      overlayBg.style.display = "block";
+    }
+  }
+
+  // Close the sidebar with the close button
+  function w3_close() {
+    mySidebar.style.display = "none";
+    overlayBg.style.display = "none";
+  }
+
+  // copy to clipbioard Yup!
+  function copyToClipboard (str) {
+   // Create new element
+   var el = document.createElement('textarea');
+   // Set value (string to be copied)
+   el.value = str;
+   // Set non-editable to avoid focus and move outside of view
+   el.setAttribute('readonly', '');
+   el.style = {position: 'absolute', left: '-9999px'};
+   document.body.appendChild(el);
+   // Select text inside element
+   el.select();
+   // Copy text to clipboard
+   document.execCommand('copy');
+   // Remove temporary element
+   document.body.removeChild(el);
+}
+  </script>
+
+<script>
+$(document).ready( function () {
+    $('table.display').DataTable({
+        "pageLength": 10,
+        "columns": [
+        { "type": "html" },
+        { "type": "html" },
+        { "type": "num" },
+        { "type": "num" },
+        { "type": "html", "orderable": false},
+        { "type": "num" },
+        { "type": "num" },
+        { "type": "html"}
+        ]
+    });
+} );
+</script>
+
+<script>
+function getRandomColor() {
+        var letters = '56789ABCDE'.split('');
+        var color = '#';
+        for (var i = 0; i < 6; i++ ) {
+            color += letters[Math.floor(Math.random() * 8)];
+        }
+        return color;
+}
+</script>
+
+
+<script>
+var ctx = document.getElementById('myChart').getContext('2d');
+var chart_data = {
+        labels: {{nightlies}},
+        datasets:[
+            {% for mt in mt_g_data %}
+            {
+                label : '{{mt}}', 
+                data: {{mt_g_data[mt]}},
+                lineTension: 0, 
+                borderWidth: 1, 
+                borderColor: getRandomColor(), 
+                fill: false
+            }{{ ", " if not loop.last }}
+            {% endfor %}
+        ]
+    };
+
+var myChart = new Chart(ctx, {
+    type: 'line',
+    data: chart_data,
+    options: {
+        aspectRatio: 4,
+        scales: { yAxes: [{ ticks: {beginAtZero: true}}]},
+        legend: {
+            position: 'right',
+            labels: {
+                fontColor: 'rgb(60, 60, 60)',
+                padding: 2
+            },
+            onHover: function(event, legendItem) {
+            document.getElementById("myChart").style.cursor = 'pointer';
+            }
+        },
+        tooltips: {
+            custom: function(tooltip) {
+                if (!tooltip.opacity) {
+                    document.getElementById("myChart").style.cursor = 'default';
+                    return;
+                }
+            }
+        },
+        title: {
+            display: true,
+            text: '{{flow}} vs {{baseline}}'
+        }
+    }
+});
+
+var showhide = true;
+
+$("#toggle").click(function() {
+	 myChart.data.datasets.forEach(function(ds) {
+    showhide =! showhide;
+    ds.hidden = showhide;
+  });
+  myChart.update();
+});
+
+</script>
+
+  </body>
+  <style>
+  .blok {
+    width : 220px;
+    height : 180px;
+    display: inline-block;
+    margin-bottom: 5px;
+  }
+
+  body {
+      font-family: 'Roboto';
+      padding-right: 160px;
+      padding-left: 160px;
+  }
+
+  html {
+  scroll-behavior: smooth;
+  }
+  </style>
+
+  </html>

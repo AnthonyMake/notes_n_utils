@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<title>{{html_title}}</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.css">
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/fixedcolumns/3.3.2/js/dataTables.fixedColumns.min.js"></script>
+<!--ChartJS-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.js"></script>
+<style>
+html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
+
+.des{width: 15%;}
+.ng{width: 6%;}
+</style>
+</style>
+<body class="w3-light-grey">
+
+<div class="w3-panel w3-container w3-white w3-padding w3-round-xlarge w3-tiny">
+Other Metrics<br>
+{% for mt in m_selection%}
+  <a  class="w3-tag w3-small w3-deep-purple w3-round" href="{{mt}}_{{suff_title}}.html">{{mt}}</a>
+{%endfor%}
+</div>
+
+<h2>{{metric}} History</h2>
+
+<div class="w3-container w3-small">
+		<br>
+		<b>Branch : </b>{{branch}}</br>
+		<b>Suite : </b>{{suite}}</br>
+		<b>Flow : </b>{{flow}}</br>
+    <b>Baseline : </b>{{baseline}}</br>
+    <b>Mean Threshold: </b> {{m_selection[metric][0]}} %<br>
+    <b>Design Threshold: </b> {{m_selection[metric][1]}} %
+<div>
+
+<!--ChartJS Line plot for metrics-->
+<div class="w3-container chart-container w3-small" style="position: relative; height:50vh; width:100vw">
+      <canvas id="myChart"></canvas>
+</div>
+
+<!--DataTables Table-->
+<div class="w3-container w3-tiny w3-responsive">
+<br>
+  <table class="w3-table w3-small display">
+    <thead>
+      <tr class="w3-deep-purple">
+      {%for hd in head_row %}
+        {%if hd == 'design'%}
+          <th class="w3-border-left w3-border-right des">{{hd}}</td>
+        {%else%}
+          <th class="w3-border-left w3-border-right ng">{{hd}}</td>
+        {%endif%}
+      {%endfor%}
+      </tr>
+      <tr class="w3-sand">
+          {%for hd in head_row %}
+          <td class="w3-border-left w3-border-right">
+            {%if 'Mean' in des_rows%}
+            {{des_rows['Mean'][hd]}}
+            {%endif%}
+          </td> 
+          {%endfor%}
+      </tr>
+    </thead>
+    <tbody>
+    {%for row in head_col %}
+      {%if row != 'Mean'%}
+      <tr>
+          {%for hd in head_row %}
+          <td class="w3-border-left w3-border-right">
+            {{des_rows[row][hd]}}
+          </td> 
+          {%endfor%}
+      </tr>
+      {%endif%}
+    {%endfor%}
+    </tbody>
+  </table>
+  </div>
+</div>
+</body>
+
+<script>
+$(document).ready( function () {
+    $('table.display').DataTable({
+        "paging"    : false ,
+        scrollX:        true,
+        scrollCollapse: true,
+        fixedColumns:   {
+            leftColumns: 1
+        },
+        "columnDefs": [{ "orderable": false, "targets": 0 }],
+                "rowCallback": function ( row, data, index ) {
+            
+        for( var i=1 ; i < data.length ; i++ ){
+              
+              var d_thres = parseFloat('{{m_selection[metric][1]}}')
+
+              if ( parseFloat(data[i]) > d_thres ) {
+                $('td', row).eq(i).addClass('w3-pale-red');
+              }
+
+              if ( parseFloat(data[i]) < d_thres*-1 ) {
+                $('td', row).eq(i).addClass('w3-pale-green');
+              }
+            
+            }
+        }
+    });
+
+    $('table.display2').DataTable({
+        "paging"    : false ,
+        searchPanes: {
+            controls: false
+        }
+    });
+} );
+</script>
+
+<script>
+function getRandomColor() {
+        var letters = '56789ABCDE'.split('');
+        var color = '#';
+        for (var i = 0; i < 6; i++ ) {
+            color += letters[Math.floor(Math.random() * 8)];
+        }
+        return color;
+}
+</script>
+
+<script>
+  var ctx = document.getElementById('myChart').getContext('2d');
+  
+  var myChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+          labels: [' {{ labels_chartjs|join("', '") }}'],
+          datasets: [
+              {label: '{{ 'Mean' }}', 
+              data: [{{des_dict_chartjs['Mean']|join(', ') }}],
+              lineTension: 0, 
+              borderWidth: 2, 
+              borderColor: '#000000', 
+              fill: true },
+              {% for design, metric_list in des_dict_chartjs.items()|sort(attribute='0') %}
+                {% if design != 'Mean' %}
+                      {label: '{{ design }}', data: [{{metric_list|join(', ') }}],
+                      lineTension: 0, 
+                      borderWidth: 1, 
+                      borderColor: getRandomColor(), 
+                      fill: false, 
+                      hidden: true} 
+                      {{ ", " if not loop.last }}
+                {% endif %}
+              {% endfor %}
+              ]
+      },
+      options: {
+          aspectRatio: 4,
+          scales: {
+              yAxes: [{
+                  ticks: {
+                      beginAtZero: true
+                  }
+              }]
+          },
+          legend: {
+            position: 'right',
+            labels: {
+            fontColor: 'rgb(60, 60, 60)',
+            padding: 2
+          },
+          onHover: function(event, legendItem) {
+            document.getElementById("myChart").style.cursor = 'pointer';
+          },/*
+            onClick: function(e, legendItem) {
+              var index = legendItem.datasetIndex;
+              var ci = this.chart;
+              var alreadyHidden = (ci.getDatasetMeta(index).hidden === null) ? false : ci.getDatasetMeta(index).hidden;
+
+              ci.data.datasets.forEach(function(e, i) {
+                var meta = ci.getDatasetMeta(i);
+
+                if (i !== index) {
+                  if (!alreadyHidden) {
+                    meta.hidden = meta.hidden === null ? !meta.hidden : null;
+                  } else if (meta.hidden === null) {
+                    meta.hidden = true;
+                  }
+                } else if (i === index) {
+                  meta.hidden = null;
+                }
+              });
+
+              ci.update();
+            },*/
+          },
+          tooltips: {
+            custom: function(tooltip) {
+              if (!tooltip.opacity) {
+                document.getElementById("myChart").style.cursor = 'default';
+                return;
+              }
+            }
+          }
+      }
+  });
+</script>
+
+</html>
