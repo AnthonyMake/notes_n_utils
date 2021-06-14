@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<title>Farm status</title>
+<meta charset="UTF-8">
+<meta name="viewport" content=" initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-grey.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script
+    src="https://code.jquery.com/jquery-3.5.1.js"
+    integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+    crossorigin="anonymous"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.css">
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.js"></script>
+<script type="text/javascript" src="chartjs-plugin-colorschemes.js"></script>
+<style>
+html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
+</style>
+<body class="w3-theme-dark">
+
+<h3>Farm Status by {{last_snapshot['timestamp']}}</h3>
+
+<div class="w3-panel w3-padding w3-border-top w3-border-orange">
+    <div class="w3-cell-row">
+        <div class="w3-container w3-cell">  
+            <tt class="w3-text-theme-d1">
+            <h4>Summary</h4>
+            
+                <tt>
+                <table class="w3-table w3-small w3-bordered w3-border">
+                    <thead>
+                    <tr>
+                        <th></th>
+                        <th>running</th>
+                        <th>pending</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr>
+                            <td>extra_run_jobs</td>
+                            <td>{{last_snapshot['extra_reg_summary']['running']['ext']}}</td>
+                            <td>{{last_snapshot['extra_reg_summary']['pending']['ext']}}</td>
+                        </tr>
+                        <tr>
+                            <td>regular_run_jobs</td>
+                            <td>{{last_snapshot['extra_reg_summary']['running']['reg']}}</td>
+                            <td>{{last_snapshot['extra_reg_summary']['pending']['reg']}}</td>
+                        </tr>
+                        <tr class="w3-amber">
+                            <td><b>total</b></td>
+                            <td><b>{{last_snapshot['extra_reg_summary']['running']['total']}}</b></td>
+                            <td><b>{{last_snapshot['extra_reg_summary']['pending']['total']}}</b></td>
+                        </tr>
+                    </tbody>
+                </table>
+                </tt>
+            
+            <h4>High Share Accounts</h4>
+            <tt>
+                <table class="w3-table w3-small w3-bordered w3-border">
+                    <thead>
+                    <tr>
+                        <th>username</th>
+                        <th>running</th>
+                        <th>pending</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    {%for user in last_snapshot['users_summary']%}
+                    <tr>
+                        <td><b>{{user}}</b></td> 
+                        <td>{{last_snapshot['users_summary'][user].get('running','0')}}</td>
+                        <td>{{last_snapshot['users_summary'][user].get('pending','0')}}</td>
+                    </tr>
+                    {%endfor%}
+                    </tbody>
+                </table>
+                </tt>
+            </tt>
+        </div>
+
+        <div class="w3-container w3-cell" style="width:50%;height:100%">
+
+            <tt>
+            <p class="w3-center">
+                <b>avg_throughput_10h: </b> 
+                <b>input:  </b> {{last_snapshot['avg_inflow']|round(1, 'floor')}} [jobs/hour] / 
+                <b>output: </b> {{last_snapshot['avg_outflow']|round(1, 'floor')}} [jobs/hour]<br>
+                <b>all_jobs_done_ETA</b>:  {{all_jobs_ETA|round(1,'floor')}} [days]
+            </p>
+            </tt>
+
+            <div class="w3-text-light-grey">
+                <canvas id="pie-chart"></canvas>
+            </div>
+
+
+
+        </div>
+    
+    </div>
+
+</div>
+
+<div class="w3-panel w3-padding w3-border-top w3-border-orange">
+
+</div>
+
+<!--div class="w3-panel w3-padding w3-border-top w3-border-orange w3-text-light-grey">
+    <canvas id="pie-chart"></canvas>
+</div-->
+
+<h4>Job Details</h4>
+<div class="w3-panel w3-padding w3-theme-l2 w3-border-top w3-border-orange">    
+    <tt>
+    <table id="letab" class="w3-table display compact w3-small" style="width:100%">
+        <thead>
+        <tr class="w3-theme-l3">
+            {%for h in tab_headers%}
+            <th>{{h}}</th>
+            {%endfor%}
+        </tr>
+        </thead>
+
+        <tbody>
+        {%for jb in last_snapshot['jobs_data']%}
+            <tr>
+            {%for h in tab_headers%}
+                <td>{{jb[h]}}</td>
+            {%endfor%}
+            </tr>
+        {%endfor%}
+        </tbody>
+    </table>
+    </tt>
+</div>
+
+<!-- Footer -->
+<footer class="w3-container w3-padding-16">
+    <p class="w3-small w3-right">by <a href="mailto:vasquez@synopsys.com" target="_blank">Antonio Vasquez</a></p>
+</footer-->
+
+<script>
+// Table Config
+$(document).ready( function () {
+    var table = $('#letab').DataTable({
+        "pageLength": 50,
+        "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+        "aaSorting": [[ 8, "desc" ]],
+        "columns": [
+        { "type": "num" },
+        { "type": "html"},
+        { "type": "html"},
+        { "type": "html"},
+        { "type": "num"},
+        { "type": "html"},
+        { "type": "date"},
+        { "type": "date"},
+        { "type": "html"}
+        ]
+    });
+} );
+</script>
+
+<script>
+// chart config
+    var config = {
+        type: 'line',
+        data: {
+            labels: {{labels|safe}},
+            datasets: [
+                {
+                    label: 'tot_run',
+                    lineTension: 0,
+                    data: {{run_tot|safe}},
+                    borderWidth: 2,
+                    fill: false,
+                    pointRadius: 0
+                },
+                {
+                    label: 'ext_run',
+                    lineTension: 0,
+                    data: {{run_ext|safe}},
+                    borderWidth: 1,
+                    fill: false,
+                    borderDash: [2,1],
+                    pointRadius: 0
+                },
+                {
+                    label: 'reg_run',
+                    lineTension: 0,
+                    data: {{run_reg|safe}},
+                    borderWidth: 1,
+                    fill: false,
+                    borderDash: [2,1],
+                    pointRadius: 0
+                    //borderColor: '#83a95c',
+                    //backgroundColor: '#83a95cAA'
+                },                                
+                {
+                    label: 'tot_pend',
+                    lineTension: 0,
+                    data: {{pend_tot|safe}},
+                    borderWidth: 2,
+                    fill: false,
+                    pointRadius: 0
+                    //borderColor: '#433d3c',
+                    //backgroundColor: '#433d3c10'
+                },
+                {
+                    label: 'ext_pend',
+                    lineTension: 0,
+                    data: {{pend_ext|safe}},
+                    borderWidth: 1,
+                    fill: false,
+                    borderDash: [2,1],
+                    pointRadius: 0
+                    //borderColor: '#433d3c',
+                    //backgroundColor: '#433d3c10'
+                },
+                {
+                    label: 'reg_pend',
+                    lineTension: 0,
+                    data: {{pend_reg|safe}},
+                    borderWidth: 1,
+                    fill: false,
+                    borderDash: [2,1],
+                    pointRadius: 0
+                    //borderColor: '#433d3c',
+                    //backgroundColor: '#433d3c10'
+                }
+                ]
+        },
+        options: {
+            scales: {
+                yAxes: [{
+                    scaleLabel : {
+                        display: true,
+                        labelString: 'Job Count'
+                    },
+                    ticks: { 
+                        reverse: false,
+                        beginAtZero: true
+                    },
+                }]
+            },
+            responsive: true,
+            maintainAspecRatio: false,
+            plugins: {
+                colorschemes: {
+                    scheme: 'brewer.SetThree7'
+                }
+            },
+            legend:{
+                position: 'right'
+            }
+        }
+    }
+
+    var ctx = document.getElementById('pie-chart').getContext('2d');
+    var chart = new Chart(ctx, config);
+    Chart.defaults.global.defaultFontColor = "#fff";
+  </script>
+
+</body>
+<style>
+.blok {
+width : 220px;
+height : 180px;
+display: inline-block;
+margin-bottom: 5px;
+}
+
+body {
+    font-family: 'Roboto';
+    padding-right: 160px;
+    padding-left: 160px;
+}
+
+</style>
+</html>
