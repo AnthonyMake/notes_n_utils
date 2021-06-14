@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<title>Farm status</title>
+<meta charset="UTF-8">
+<meta name="viewport" content=" initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-grey.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script
+    src="https://code.jquery.com/jquery-3.5.1.js"
+    integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+    crossorigin="anonymous"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.css">
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.js"></script>
+
+<style>
+html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
+</style>
+<body class="w3-theme-dark">
+
+<h3>Reports</h3>
+
+<!--div class="w3-panel w3-padding w3-border-top w3-border-orange w3-text-light-grey">
+    <canvas id="pie-chart"></canvas>
+</div-->
+<p>
+    <b>Branch  : s2021.06_ls</b><br>
+    <b>Suite   : DC_ICC2</b><br> 
+    <b>Nightly : D20210507_14_15</b><br>
+</p>
+
+<div class="w3-panel w3-padding w3-white w3-border-top w3-border-orange">    
+    <tt>
+    <table id="my_tabla" class="w3-small w3-table w3-striped w3-border">
+        <thead>
+        <tr class="w3-theme-l3">
+            <th>Num</th>
+            <th>Reporte</th>
+        </tr>
+        </thead>
+
+        <tbody>
+            
+                <tr>
+                    <td>0</td>
+                    <td>prs_report.dongjin_ex.out</td>
+                </tr>
+            
+                <tr>
+                    <td>1</td>
+                    <td>prs_report.upf_srm.out</td>
+                </tr>
+            
+                <tr>
+                    <td>2</td>
+                    <td>prs_report.diff.upf_srm.out</td>
+                </tr>
+            
+                <tr>
+                    <td>3</td>
+                    <td>prs_report.diff.upf_srm_icc2_spg.out</td>
+                </tr>
+            
+                <tr>
+                    <td>4</td>
+                    <td>prs_report.fml_fml.upf_srm.html</td>
+                </tr>
+            
+                <tr>
+                    <td>5</td>
+                    <td>prs_report.setup_diff.html</td>
+                </tr>
+            
+                <tr>
+                    <td>6</td>
+                    <td>prs_report.fml_fml.upf_srm_icc2_spg.html</td>
+                </tr>
+            
+                <tr>
+                    <td>7</td>
+                    <td>prs_report.fml_diff.srm_icc2_spg_timing_ona.out</td>
+                </tr>
+            
+                <tr>
+                    <td>8</td>
+                    <td>prs_report.fml_srmfm_spg_timing_ona.html</td>
+                </tr>
+            
+                <tr>
+                    <td>9</td>
+                    <td>prs_report.diff.srm_icc2_spg_timing_opt_area.out</td>
+                </tr>
+            
+                <tr>
+                    <td>10</td>
+                    <td>prs_report.srm_icc2_spg_timing_opt_area_1.out</td>
+                </tr>
+            
+                <tr>
+                    <td>11</td>
+                    <td>prs_report.srm_icc2_spg_timing_power_opt_area_scib_all_1.out</td>
+                </tr>
+            
+                <tr>
+                    <td>12</td>
+                    <td>prs_report.srm_icc2_spg_timing_opt_area_2.out</td>
+                </tr>
+            
+                <tr>
+                    <td>13</td>
+                    <td>prs_report.upf_srm_icc2_spg.out</td>
+                </tr>
+            
+                <tr>
+                    <td>14</td>
+                    <td>prs_report.upf_srm_libsetup.out</td>
+                </tr>
+            
+                <tr>
+                    <td>15</td>
+                    <td>prs_report.upf_srm_spg_libsetup.out</td>
+                </tr>
+            
+                <tr>
+                    <td>16</td>
+                    <td>prs_report.srm_icc2_spg_timing_opt_area.out</td>
+                </tr>
+            
+                <tr>
+                    <td>17</td>
+                    <td>prs_report.srm_icc2_spg_power_opt_area.out</td>
+                </tr>
+            
+                <tr>
+                    <td>18</td>
+                    <td>prs_report.srm_icc2_spg_timing_power_opt_area.out</td>
+                </tr>
+            
+                <tr>
+                    <td>19</td>
+                    <td>prs_report.srm_icc2_spg_timing_power_opt_area_scib_all.out</td>
+                </tr>
+            
+                <tr>
+                    <td>20</td>
+                    <td>prs_report.srm_icc2_spg_timing_power_opt_area_scib_all_2.out</td>
+                </tr>
+            
+                <tr>
+                    <td>21</td>
+                    <td>prs_report.srm_icc2_spg_timing_opt_area_3.out</td>
+                </tr>
+            
+                <tr>
+                    <td>22</td>
+                    <td>prs_report.srm_icc2_spg_timing_power_opt_area_scib_all_3.out</td>
+                </tr>
+            
+                <tr>
+                    <td>23</td>
+                    <td>prs_report.srm_icc2_spg_timing_power_opt_area_scib_all_4.out</td>
+                </tr>
+            
+                <tr>
+                    <td>24</td>
+                    <td>prs_report.srm_icc2_spg_timing_opt_area_4.out</td>
+                </tr>
+            
+        </tbody>
+    </table>
+    
+    </tt>
+</div>
+
+<!-- Footer -->
+<!--footer class="w3-container w3-padding-16">
+    <p class="w3-small w3-right">by <a href="mailto:vasquez@synopsys.com" target="_blank">Antonio Vasquez</a></p>
+</footer-->
+
+<script>
+// Table Config
+$(document).ready( function () {
+    var table = $('#my_tabla').DataTable({
+         "paging": true
+    });
+} );
+</script>
+
+</body>
+<style>
+.blok {
+width : 220px;
+height : 180px;
+display: inline-block;
+margin-bottom: 5px;
+}
+
+body {
+    font-family: 'Roboto';
+    padding-right: 160px;
+    padding-left: 160px;
+}
+
+</style>
+</html>
