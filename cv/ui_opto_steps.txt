@@ -1,0 +1,29 @@
+
+
+
+uisyn/ui/uiopt/uiopt_comp.c
+
+uiopt_compile_design_incr
+uiopt_compile_ultra_incr
+uiopt_compile_explore_incr
+
+uisyn/ui/uiopt/uiopt_load.c
+
+ui_add_cmd("compile",uiopt_compile_design_incr,UI_CMD_DEFAULT,0);
+ui_add_cmd(UIC_COMPILE_ULTRA, uiopt_compile_ultra_incr,UI_CMD_DEFAULT,0);
+
+
+#define UIC_COMPILE         "compile"
+#define UIC_COMPILE_ULTRA               "compile_ultra"
+#define UIC_COMPILE_EXPLORE               "compile_exploration"
+
+
+
+----> COMPILE ejecuta en
+do_compile_design
+
+
+
+opto_begin_step(o->current_dc_design, "compile")
+...
+opto_end_step(o->current_dc_design, "compile");
